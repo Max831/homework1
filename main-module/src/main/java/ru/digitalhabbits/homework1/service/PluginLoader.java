@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import ru.digitalhabbits.homework1.plugin.PluginInterface;
 
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -18,6 +20,13 @@ public class PluginLoader {
     @Nonnull
     public List<Class<? extends PluginInterface>> loadPlugins(@Nonnull String pluginDirName) {
         // TODO: NotImplemented
-        return newArrayList();
+        File dir = new File(PACKAGE_TO_SCAN); //path указывает на директорию
+        List<Class<? extends PluginInterface>> lst = new ArrayList<>();
+        ru.digitalhabbits.homework1.plugin.PluginInterface
+        for ( File file : dir.listFiles() ){
+            if ( file.isFile() )
+                lst.add(file.;
+        }
+        return lst;
     }
 }

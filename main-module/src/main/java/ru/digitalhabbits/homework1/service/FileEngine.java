@@ -17,8 +17,17 @@ public class FileEngine {
 
     public void cleanResultDir() {
         final String currentDir = System.getProperty("user.dir");
+        //new Directory
         final File resultDir = new File(currentDir + "/" + RESULT_DIR);
-        stream(resultDir.list((dir, name) -> name.endsWith(RESULT_EXT)))
-                .forEach(fileName -> new File(resultDir + "/" + fileName).delete());
+        if (!resultDir.exists()) {
+            if (resultDir.mkdir()) {
+                System.out.println("Directory is created");
+            } else {
+                System.out.println("Failed to create Directory");
+            }
+        } else {
+            stream(resultDir.list((dir, name) -> name.endsWith(RESULT_EXT)))
+                    .forEach(fileName -> new File(resultDir + "/" + fileName).delete());
+        }
     }
 }
