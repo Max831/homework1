@@ -12,10 +12,9 @@ public class CounterPlugin
     @Nullable
     @Override
     public String apply(@Nonnull String text) {
-        //String[] countWord=text.split("\\s+");
         var countWord = pattern.matcher(text).results().count();
         String[] countRow = text.split("\\n");
         var letter = text.chars().filter(Character::isLetter).count();
-        return countRow.length + ";"+countWord+";"+letter;
+        return countRow.length + ";" + countWord + ";" + text.length();
     }
 }

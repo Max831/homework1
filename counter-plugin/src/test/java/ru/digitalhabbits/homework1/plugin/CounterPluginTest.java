@@ -26,10 +26,10 @@ class CounterPluginTest {
 
     static Stream<TestDataHolder> testDataGenerator() {
         return Stream.of(
-                new TestDataHolder(TestData.TEXT1, 3, 8, 32),
-                new TestDataHolder(TestData.TEXT2, 1, 6, 28),
-                new TestDataHolder(TestData.TEXT3, 4, 23, 92),
-                new TestDataHolder(TestData.TEXT4, 3, 57, 309)
+                new TestDataHolder(TestData.TEXT1, 3, 8, 39),
+                new TestDataHolder(TestData.TEXT2, 1, 6, 33),
+                new TestDataHolder(TestData.TEXT3, 4, 23, 114),
+                new TestDataHolder(TestData.TEXT4, 3, 57, 373)
         );
     }
 }
