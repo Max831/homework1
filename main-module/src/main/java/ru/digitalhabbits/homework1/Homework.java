@@ -14,7 +14,7 @@ public class Homework {
             return args[0];
         }
         final Scanner in = new Scanner(System.in);
-        System.out.print("MapReduce");
+        System.out.print("Enter search string: ");
         return in.nextLine();
     }
 }
