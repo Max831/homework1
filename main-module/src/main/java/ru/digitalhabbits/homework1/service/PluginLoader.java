@@ -11,6 +11,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.jar.JarFile;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -24,10 +25,9 @@ public class PluginLoader {
 
     @Nonnull
     public List<Class<? extends PluginInterface>> loadPlugins(@Nonnull String pluginDirName) {
-        var currentDir = System.getProperty("user.dir") + "\\+" + pluginDirName + "\\";
+        var currentDir = System.getProperty("user.dir") + "\\" + pluginDirName + "\\";
         var pluginDir = new File(currentDir);
-        getClassesNames(Objects.requireNonNull(pluginDir.listFiles()));
-
+            getClassesNames(pluginDir.listFiles());
         return plugins;
     }
 
