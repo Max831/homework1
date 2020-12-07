@@ -9,7 +9,8 @@ public class CounterPlugin
     @Nullable
     @Override
     public String apply(@Nonnull String text) {
-        // TODO: NotImplemented
-        return "CounterPlugin: NotImplemented";
+        String[] countWord=text.split("\\s+");
+        String[] countRow = text.split("\\n");
+        return countRow.length + ";"+countWord.length+";"+text.length();
     }
 }

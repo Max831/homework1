@@ -1,30 +1,32 @@
 package ru.digitalhabbits.homework1.service;
 
-import com.google.gson.JsonParser;
 import com.jayway.jsonpath.JsonPath;
+import net.minidev.json.JSONArray;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 public class WikipediaClient {
     public static final String WIKIPEDIA_SEARCH_URL = "https://en.wikipedia.org/w/api.php";
+    private static final Logger logger = getLogger(WikipediaClient.class);
 
     @Nonnull
     public String search(@Nonnull String searchString) {
         final URI uri = prepareSearchUrl(searchString);
-        // TODO: NotImplemented
-        sendRequest(uri);
-        return uri.toString();
+        return sendRequest(uri);
     }
 
     @Nonnull
@@ -38,16 +40,16 @@ public class WikipediaClient {
                     .addParameter("explaintext", "")
                     .build();
         } catch (URISyntaxException exception) {
+            logger.error(exception.getMessage());
             throw new RuntimeException(exception);
         }
     }
 
-    private void sendRequest(URI uri) {
+    private String sendRequest(URI uri) {
         HttpGet request = new HttpGet(uri);
-
-        // add request headers
-        request.addHeader("custom-key", "mkyong");
-        request.addHeader(HttpHeaders.USER_AGENT, "Googlebot");
+        request.addHeader("Accept", "application/json");
+        request.addHeader("Accept-Charset", "utf-8");
+        String result = "";
         try {
 
             try (CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -62,25 +64,16 @@ public class WikipediaClient {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
                     // return it as a String
-                    String result = EntityUtils.toString(entity);
-                    System.out.println(result);
-                    var t = JsonParser.parseString(result);
-                    System.out.println(t);
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()))) {
+                        String json = reader.readLine();
+                        JSONArray jsonArray = JsonPath.parse(json).read("$.query.pages.*.extract");
+                        result = jsonArray.get(0).toString();
+                    }
                 }
-//                JsonParser.parseString(r)
-//                JsonPath.
-//                JSONObject obj = new JSONObject(jsonString);
-//                String pageName = obj.getJSONObject("pageInfo").getString("pageName");
-//
-//                JSONArray arr = obj.getJSONArray("posts");
-//                for (int i = 0; i < arr.length(); i++)
-//                {
-//                    String post_id = arr.getJSONObject(i).getString("post_id");
-//    ......
-//                }
             }
         } catch (IOException e) {
-            System.out.println("Error" + e);
+            logger.error(e.fillInStackTrace() + e.getLocalizedMessage());
         }
+        return result;
     }
 }
