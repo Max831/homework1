@@ -3,6 +3,8 @@ package ru.digitalhabbits.homework1.service;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -52,7 +54,10 @@ public class WikipediaClient {
         String result = "";
         try {
 
-            try (CloseableHttpClient httpClient = HttpClients.createDefault();
+            try (CloseableHttpClient httpClient = HttpClients.custom()
+                    .setDefaultRequestConfig(RequestConfig.custom()
+                            .setCookieSpec(CookieSpecs.STANDARD).build())
+                    .build();
                  CloseableHttpResponse response = httpClient.execute(request)) {
 
                 // Get HttpResponse Status
@@ -63,11 +68,12 @@ public class WikipediaClient {
 
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
-                    // return it as a String
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()))) {
                         String json = reader.readLine();
                         JSONArray jsonArray = JsonPath.parse(json).read("$.query.pages.*.extract");
-                        result = jsonArray.get(0).toString();
+                        if (!jsonArray.isEmpty()) {
+                            result = jsonArray.get(0).toString();
+                        }
                     }
                 }
             }

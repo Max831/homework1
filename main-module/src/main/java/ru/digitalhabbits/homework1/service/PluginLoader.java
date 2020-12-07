@@ -10,8 +10,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.jar.JarFile;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -27,43 +25,49 @@ public class PluginLoader {
     public List<Class<? extends PluginInterface>> loadPlugins(@Nonnull String pluginDirName) {
         var currentDir = System.getProperty("user.dir") + "\\" + pluginDirName + "\\";
         var pluginDir = new File(currentDir);
-            getClassesNames(pluginDir.listFiles());
+        getClassesNames(pluginDir.listFiles());
         return plugins;
     }
 
-
+    @SuppressWarnings("unchecked")
     private void getClassesNames(File[] files) {
-        ArrayList<String> classes = new ArrayList<>();
-        ArrayList<URL> urls = new ArrayList<>(files.length);
-        for (File file : files) {
-            try {
-                JarFile jar = new JarFile(file);
-                jar.stream().forEach(jarEntry -> {
-                    if (jarEntry.getName().endsWith(".class")) {
-                        classes.add(jarEntry.getName());
+        if (files != null && files.length != 0) {
+            ArrayList<String> classes = new ArrayList<>();
+            ArrayList<URL> urls = new ArrayList<>(files.length);
+            for (File file : files) {
+                try {
+                    JarFile jar = new JarFile(file);
+                    jar.stream().forEach(jarEntry -> {
+                        if (jarEntry.getName().endsWith(".class")) {
+                            classes.add(jarEntry.getName());
+                        }
+                    });
+                    URL url = file.toURI().toURL();
+                    urls.add(url);
+                } catch (IOException e) {
+                    logger.error(e.getLocalizedMessage());
+                }
+            }
+
+            for (var item : urls) {
+                URL[] currentItem = urls.toArray(new URL[]{item});
+                URLClassLoader urlClassLoader = new URLClassLoader(currentItem);
+                classes.forEach(className -> {
+                    try {
+                        Class loadClass = urlClassLoader.loadClass(className.replaceAll("/", ".").replace(".class", ""));
+                        Class[] interfaces = loadClass.getInterfaces();
+                        for (Class plugin : interfaces) {
+                            if (plugin.equals(PluginInterface.class)) {
+                                plugins.add(loadClass);
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        logger.error(e.getLocalizedMessage());
+                        e.printStackTrace();
                     }
                 });
-                URL url = file.toURI().toURL();
-                urls.add(url);
-            } catch (IOException e) {
-                logger.error(e.getLocalizedMessage());
             }
         }
-        URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
-        classes.forEach(className -> {
-            try {
-                Class cls = urlClassLoader.loadClass(className.replaceAll("/", ".").replace(".class", ""));
-                Class[] interfaces = cls.getInterfaces();
-                for (Class intface : interfaces) {
-                    if (intface.equals(PluginInterface.class)) {
-                        plugins.add(cls);
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                logger.error(e.getLocalizedMessage());
-                e.printStackTrace();
-            }
-        });
     }
 }

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import static java.util.Arrays.stream;
@@ -18,22 +19,22 @@ public class FileEngine {
     public boolean writeToFile(@Nonnull String text, @Nonnull String pluginName) {
         final String currentDir = System.getProperty("user.dir");
         final File resultDir = new File(currentDir + "/" + RESULT_DIR);
-        //if (!resultDir.exists()) {
-            try {
-
-                File file = new File(resultDir, pluginName + ".txt"); // put the file inside the folder
-                file.createNewFile(); // create the file
-            } catch (IOException e) {
-                logger.error(e.getLocalizedMessage());
+        File file = new File(resultDir, pluginName + ".txt");
+        try {
+            if (file.createNewFile()) { // create the file
+                try (FileWriter writer = new FileWriter(file.getAbsolutePath(), false)) {
+                    writer.write(text);
+                    writer.flush();
+                }
             }
-       // }
-        // TODO: NotImplemented
+        } catch (IOException e) {
+            logger.error(e.getLocalizedMessage());
+        }
         return true;
     }
 
     public void cleanResultDir() {
         final String currentDir = System.getProperty("user.dir");
-        //new Directory
         final File resultDir = new File(currentDir + "/" + RESULT_DIR);
         if (!resultDir.exists()) {
             if (resultDir.mkdir()) {

@@ -19,7 +19,7 @@ public class FrequencyDictionaryPlugin
     @Override
     public String apply(@Nonnull String text) {
 
-        Map<String, Long> wordToCount = new HashMap<>();
+        Map<String, Long> wordToCount = new TreeMap<>();
         wordToCount.putAll(
                 pattern.matcher(text.toLowerCase()).results()
                         .map(MatchResult::group)
