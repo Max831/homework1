@@ -25,6 +25,9 @@ public class PluginLoader {
     public List<Class<? extends PluginInterface>> loadPlugins(@Nonnull String pluginDirName) {
         var currentDir = System.getProperty("user.dir") + "\\" + pluginDirName + "\\";
         var pluginDir = new File(currentDir);
+        if (!pluginDir.exists()) {
+            pluginDir.mkdir();
+        }
         getClassesNames(pluginDir.listFiles());
         return plugins;
     }
@@ -63,7 +66,6 @@ public class PluginLoader {
                         }
                     } catch (Exception e) {
                         logger.error(e.getLocalizedMessage());
-                        e.printStackTrace();
                     }
                 });
             }
