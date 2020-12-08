@@ -40,7 +40,6 @@ allprojects { ->
     }
 
     jar {
-        //destinationDirectory = file("$rootDir/plugins")
         archiveFileName = "${project.name}.jar"
     }
 
