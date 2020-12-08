@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarFile;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class PluginLoader {
@@ -19,56 +20,55 @@ public class PluginLoader {
 
     private static final String PLUGIN_EXT = ".jar";
     private static final String PACKAGE_TO_SCAN = "ru.digitalhabbits.homework1.plugin";
-    static List<Class<? extends PluginInterface>> plugins = new ArrayList<>();
 
     @Nonnull
     public List<Class<? extends PluginInterface>> loadPlugins(@Nonnull String pluginDirName) {
-        var currentDir = System.getProperty("user.dir") + "\\" + pluginDirName + "\\";
-        var pluginDir = new File(currentDir);
+        File pluginDir = new File(pluginDirName);
+
         if (!pluginDir.exists()) {
             pluginDir.mkdir();
         }
-        getClassesNames(pluginDir.listFiles());
-        return plugins;
-    }
 
-    private void getClassesNames(File[] files) {
-        if (files != null && files.length != 0) {
-            ArrayList<String> classes = new ArrayList<>();
-            ArrayList<URL> urls = new ArrayList<>(files.length);
-            for (File file : files) {
-                try {
+        File[] files = pluginDir.listFiles((dir, name) -> name.endsWith(PLUGIN_EXT));
+
+        ArrayList<String> classes = newArrayList();
+        ArrayList<URL> urls = new ArrayList<>(files.length);
+
+        if (files.length > 0) {
+            try {
+                for (File file : files) {
                     JarFile jar = new JarFile(file);
                     jar.stream().forEach(jarEntry -> {
-                        if (jarEntry.getName().endsWith(".class")) {
+                        if (jarEntry.getName().replace("/", ".").startsWith(PACKAGE_TO_SCAN) && jarEntry.getName().endsWith(".class")) {
                             classes.add(jarEntry.getName());
                         }
                     });
                     URL url = file.toURI().toURL();
                     urls.add(url);
-                } catch (IOException e) {
-                    logger.error(e.getLocalizedMessage());
                 }
-            }
-
-            for (var item : urls) {
-                URL[] currentItem = urls.toArray(new URL[]{item});
-                URLClassLoader urlClassLoader = new URLClassLoader(currentItem);
-                classes.forEach(className -> {
-                    try {
-                        Class loadClass = urlClassLoader.loadClass(className.replaceAll("/", ".").replace(".class", ""));
-                        Class[] interfaces = loadClass.getInterfaces();
-                        for (Class plugin : interfaces) {
-                            if (plugin.equals(PluginInterface.class)) {
-                                plugins.add(loadClass);
-                                break;
-                            }
-                        }
-                    } catch (Exception e) {
-                        logger.error(e.getLocalizedMessage());
-                    }
-                });
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
             }
         }
+
+        List<Class<? extends PluginInterface>> plugins = new ArrayList<>();
+
+        URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
+        classes.forEach(className -> {
+            try {
+                Class cls = urlClassLoader.loadClass(className.replaceAll("/", ".").replace(".class", "")); //transforming to binary name
+                Class[] interfaces = cls.getInterfaces();
+                for (Class intface : interfaces) {
+                    if (intface.equals(PluginInterface.class)) {
+                        plugins.add(cls);
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+        });
+
+        return plugins;
     }
 }
