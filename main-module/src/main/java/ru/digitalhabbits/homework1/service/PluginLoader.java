@@ -29,7 +29,6 @@ public class PluginLoader {
         return plugins;
     }
 
-    @SuppressWarnings("unchecked")
     private void getClassesNames(File[] files) {
         if (files != null && files.length != 0) {
             ArrayList<String> classes = new ArrayList<>();
